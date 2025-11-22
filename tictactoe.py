@@ -24,21 +24,20 @@ def tictactoe():
         print("I won.")
         return
 
+
 def checkwinner(b):
     winning_planks = [
-    # Rows
-    [(0,0),(0,1),(0,2)],
-    [(1,0),(1,1),(1,2)],
-    [(2,0),(2,1),(2,2)],
-
-    # Columns
-    [(0,0),(1,0),(2,0)],
-    [(0,1),(1,1),(2,1)],
-    [(0,2),(1,2),(2,2)],
-
-    # Diagonals
-    [(0,0),(1,1),(2,2)],
-    [(0,2),(1,1),(2,0)]
+        # Rows
+        [(0, 0), (0, 1), (0, 2)],
+        [(1, 0), (1, 1), (1, 2)],
+        [(2, 0), (2, 1), (2, 2)],
+        # Columns
+        [(0, 0), (1, 0), (2, 0)],
+        [(0, 1), (1, 1), (2, 1)],
+        [(0, 2), (1, 2), (2, 2)],
+        # Diagonals
+        [(0, 0), (1, 1), (2, 2)],
+        [(0, 2), (1, 1), (2, 0)],
     ]
 
     for plank in winning_planks:
@@ -47,8 +46,8 @@ def checkwinner(b):
             return 3
         elif total == -3:
             return -3
-
-
+        else:
+            return 0
 
 
 def compete(choice, board):
@@ -66,8 +65,31 @@ def compete(choice, board):
         aipos = predict(board)
 
 
+def empty_positions(board):
+    """Return a list of (row, col) tuples where board is empty (0)"""
+    return [(r, c) for r in range(3) for c in range(3) if board[r, c] == 0]
+
+
 def predict(board):
-    
+    spacetreestructure = [np.zeros(n, dtype=int) for n in range(9, 0, -1)]
+    spacetree = spacetreefarm(board, spacetreestructure)
+
+
+def spacetreefarm(board, spacetreestructure):
+
+    emptypos = empty_positions(board)
+    width = len(emptypos)
+
+    count = 0
+    for branches in emptypos:
+        r, c = branches
+        vboard = board.copy()
+
+        vboard[r, c] = 1
+        check = checkwinner(vboard)
+        spacetreestructure[9 - width][count] = check
+        count += 1
+
 
 def indexized(pos):
     """Convert 1-9 position to (row, col) index"""
