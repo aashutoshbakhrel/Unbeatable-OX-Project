@@ -46,8 +46,7 @@ def checkwinner(b):
             return 3
         elif total == -3:
             return -3
-        else:
-            return 0
+    return 0
 
 
 def compete(choice, board):
@@ -62,7 +61,8 @@ def compete(choice, board):
         print(board)
         return board
     if choice == "X":
-        aipos = predict(board)
+        apos = predict(board)
+        return board
 
 
 def empty_positions(board):
@@ -70,31 +70,82 @@ def empty_positions(board):
     return [(r, c) for r in range(3) for c in range(3) if board[r, c] == 0]
 
 
-def predict(board):
-    spacetreestructure = [np.zeros(n, dtype=int) for n in range(9, 0, -1)]
-    spacetree = spacetreefarm(board, spacetreestructure)
+def make_zero_tree(dim):
+    """
+    Creates a decreasing-dimension recursive tree.
+    Each node = [0, children]
+    children = list of (dim-1) similar nodes.
+    """
+    if dim == 0:
+        return [0, []]  # leaf node
+
+    children = [make_zero_tree(dim - 1) for _ in range(dim)]
+    return [0, children]
 
 
-def spacetreefarm(board, spacetreestructure):
+def spacetreefarm(board, player=1):
+    """
+    Recursively builds a spacetree for Tic-Tac-Toe:
+    - Each node = [evaluation, children]
+    - Children = all possible moves from current board
+    """
 
     emptypos = empty_positions(board)
     width = len(emptypos)
 
-    count = 0
-    for branches in emptypos:
-        r, c = branches
-        vboard = board.copy()
+    # If no empty positions, return leaf node
+    if width == 0:
+        result = checkwinner(board)
+        return [result, []]
 
-        vboard[r, c] = 1
-        check = checkwinner(vboard)
-        spacetreestructure[9 - width][count] = check
-        count += 1
+    # Create current level of the tree
+    spacetree = make_zero_tree(width)
+
+    for i, (r, c) in enumerate(emptypos):
+        vboard = board.copy()
+        vboard[r, c] = player  # simulate move
+
+        # Evaluate the board
+        # print(vboard)
+        result = checkwinner(vboard)
+        spacetree[1][i][0] = result  # store result at this node
+
+        # Recursively build children (next moves)
+        spacetree[1][i][1] = spacetreefarm(vboard, -player)[1]  # children of this node
+
+    return spacetree
+
+    # count = 0
+    # for branches in emptypos:
+    #     r, c = branches
+    #     vboard = board.copy()
+
+    #     vboard[r, c] = 1
+    #     check = checkwinner(vboard)
+    #     spacetreestructure[9 - width][count] = check
+    #     count += 1
 
 
 def indexized(pos):
     """Convert 1-9 position to (row, col) index"""
     pos -= 1  # 1-9 → 0-8
     return (pos // 3, pos % 3)
+
+
+def predict(board):
+    # spacetreestructure = [np.zeros(n, dtype=int) for n in range(9, 0, -1)]
+    # spacetree = spacetreefarm(board, spacetreestructure)
+
+    spacetree = spacetreefarm(board)
+    emptypos = empty_positions(board)
+    width = len(emptypos)
+    # print(len(spacetree))
+
+    
+
+    for node.n in spacetree[1]:
+        if node.n == 3:
+            
 
 
 if __name__ == "__main__":
